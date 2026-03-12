@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-border: var(--border);
+}
+
+
+:root {
+  --background: oklch(0.1591 0 0);
+  --border: oklch(48.275% 0.0081 276.992);
+}
