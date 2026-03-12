@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
+import { animate } from "motion/react";
 import demoImg from "./assets/demo.png";
 
 interface Point {
@@ -8,8 +9,8 @@ interface Point {
 
 interface TapeConfig {
   topSag: number;
-  bumpOut: number;
-  bumpUp: number;
+  topBumpOut: number;
+  topBumpUp: number;
   bottomSag: number;
   bottomSpread: number;
   leftBottomAngle: number;
@@ -18,7 +19,7 @@ interface TapeConfig {
   rightTopAngle: number;
 }
 
-function getTangentPoint(center: Point, radius: number, angle: number): Point {
+function getPointOnCircle(center: Point, radius: number, angle: number): Point {
   return {
     x: center.x + radius * Math.cos(angle),
     y: center.y + radius * Math.sin(angle),
@@ -29,15 +30,11 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
 function lerpConfig(a: TapeConfig, b: TapeConfig, t: number): TapeConfig {
   return {
     topSag:           lerp(a.topSag,           b.topSag,           t),
-    bumpOut:          lerp(a.bumpOut,          b.bumpOut,          t),
-    bumpUp:           lerp(a.bumpUp,           b.bumpUp,           t),
+    topBumpOut:       lerp(a.topBumpOut,       b.topBumpOut,       t),
+    topBumpUp:        lerp(a.topBumpUp,        b.topBumpUp,        t),
     bottomSag:        lerp(a.bottomSag,        b.bottomSag,        t),
     bottomSpread:     lerp(a.bottomSpread,     b.bottomSpread,     t),
     leftBottomAngle:  lerp(a.leftBottomAngle,  b.leftBottomAngle,  t),
@@ -47,10 +44,10 @@ function lerpConfig(a: TapeConfig, b: TapeConfig, t: number): TapeConfig {
   };
 }
 
-const DROOPY: TapeConfig = {
+const LOOSE: TapeConfig = {
   topSag:           15,
-  bumpOut:          28,
-  bumpUp:           12,
+  topBumpOut:       28,
+  topBumpUp:        12,
   bottomSag:        25,
   bottomSpread:     60,
   leftBottomAngle:  Math.PI / 2 + 0.35,
@@ -61,8 +58,8 @@ const DROOPY: TapeConfig = {
 
 const TIGHT: TapeConfig = {
   topSag:           0,
-  bumpOut:          4,
-  bumpUp:           2,
+  topBumpOut:       4,
+  topBumpUp:        2,
   bottomSag:        15,
   bottomSpread:     30,
   leftBottomAngle:  Math.PI / 2 + 0.2,
@@ -71,55 +68,46 @@ const TIGHT: TapeConfig = {
   rightTopAngle:   -Math.PI / 2 + 0.15,
 };
 
+const LEFT_REEL:  Point = { x: 152, y: 155 };
+const RIGHT_REEL: Point = { x: 328, y: 155 };
+const REEL_RADIUS = 56;
+
 export default function App() {
-  const left: Point  = { x: 152, y: 155 };
-  const right: Point = { x: 328, y: 155 };
-  const r = 56;
+  const [t, setT] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-  const [progress, setProgress] = useState<number>(0);
-  const [isTight, setIsTight] = useState<boolean>(false);
-  const animRef = useRef<number | null>(null);
-  const startRef = useRef<number | null>(null);
-  const progressRef = useRef<number>(0);
+  function toggle(): void {
+  setIsPlaying(prev => {
+    animate(t, prev ? 0 : 1, {
+      duration: 0.6,
+      ease: "easeInOut",
+      onUpdate: setT,
+    });
+    return !prev;
+  });
+}
 
-  function animate(targetProgress: number): void {
-    if (animRef.current) cancelAnimationFrame(animRef.current);
-    const startProgress = progressRef.current;
-    startRef.current = null;
+  const cfg = lerpConfig(LOOSE, TIGHT, t);
 
-    function step(timestamp: number): void {
-      if (!startRef.current) startRef.current = timestamp;
-      const elapsed = timestamp - startRef.current;
-      const duration = 600;
-      const raw = Math.min(elapsed / duration, 1);
-      const eased = easeInOut(raw);
-      const current = lerp(startProgress, targetProgress, eased);
-      progressRef.current = current;
-      setProgress(current);
-      if (raw < 1) animRef.current = requestAnimationFrame(step);
-    }
+  const bottomLeft  = getPointOnCircle(LEFT_REEL,  REEL_RADIUS, cfg.leftBottomAngle);
+  const bottomRight = getPointOnCircle(RIGHT_REEL, REEL_RADIUS, cfg.rightBottomAngle);
+  const topLeft     = getPointOnCircle(LEFT_REEL,  REEL_RADIUS, cfg.leftTopAngle);
+  const topRight    = getPointOnCircle(RIGHT_REEL, REEL_RADIUS, cfg.rightTopAngle);
 
-    animRef.current = requestAnimationFrame(step);
-  }
+  const midX = (bottomLeft.x + bottomRight.x) / 2;
 
-  function handleClick(): void {
-    const next = !isTight;
-    setIsTight(next);
-    animate(next ? 1 : 0);
-  }
+  const bottomTape = `M ${bottomLeft.x} ${bottomLeft.y}
+    C ${midX - cfg.bottomSpread} ${bottomLeft.y + cfg.bottomSag},
+      ${midX + cfg.bottomSpread} ${bottomRight.y + cfg.bottomSag},
+      ${bottomRight.x} ${bottomRight.y}`;
 
-  const cfg = lerpConfig(DROOPY, TIGHT, progress);
-
-  const lb = getTangentPoint(left,  r, cfg.leftBottomAngle);
-  const rb = getTangentPoint(right, r, cfg.rightBottomAngle);
-  const lt = getTangentPoint(left,  r, cfg.leftTopAngle);
-  const rt = getTangentPoint(right, r, cfg.rightTopAngle);
-
-  const midX = (lb.x + rb.x) / 2;
-
-  const bottomCurve = `M ${lb.x} ${lb.y} C ${midX - cfg.bottomSpread} ${lb.y + cfg.bottomSag}, ${midX + cfg.bottomSpread} ${rb.y + cfg.bottomSag}, ${rb.x} ${rb.y}`;
-  const topCurve = `M ${lt.x} ${lt.y} C ${lt.x + cfg.bumpOut} ${lt.y - cfg.bumpUp}, ${midX - 40} ${lt.y + cfg.topSag}, ${midX} ${lt.y + cfg.topSag}
-    C ${midX + 40} ${rt.y + cfg.topSag}, ${rt.x - cfg.bumpOut} ${rt.y - cfg.bumpUp}, ${rt.x} ${rt.y}`;
+  const topTape = `M ${topLeft.x} ${topLeft.y}
+    C ${topLeft.x  + cfg.topBumpOut} ${topLeft.y  - cfg.topBumpUp},
+      ${midX - 40} ${topLeft.y  + cfg.topSag},
+      ${midX}      ${topLeft.y  + cfg.topSag}
+    C ${midX + 40} ${topRight.y + cfg.topSag},
+      ${topRight.x - cfg.topBumpOut} ${topRight.y - cfg.topBumpUp},
+      ${topRight.x} ${topRight.y}`;
 
   return (
     <main className="min-h-screen flex flex-col gap-8 p-4 bg-background">
@@ -127,18 +115,18 @@ export default function App() {
         <img src={demoImg} alt="demo" className="w-md aspect-auto" />
         <div className="rounded-3xl w-lg h-80 bg-background border-border border relative">
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 480 320">
-            <circle cx={left.x}  cy={left.y}  r={r} fill="none" stroke="white" strokeWidth="2" />
-            <circle cx={right.x} cy={right.y} r={r} fill="none" stroke="white" strokeWidth="2" />
-            <path d={bottomCurve} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            <path d={topCurve}    fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <circle cx={LEFT_REEL.x}  cy={LEFT_REEL.y}  r={REEL_RADIUS} fill="none" stroke="white" strokeWidth="2" />
+            <circle cx={RIGHT_REEL.x} cy={RIGHT_REEL.y} r={REEL_RADIUS} fill="none" stroke="white" strokeWidth="2" />
+            <path d={bottomTape} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d={topTape}    fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
       </section>
       <button
-        onClick={handleClick}
+        onClick={toggle}
         className="self-start px-6 py-2 rounded-full border border-white text-white hover:bg-white hover:text-black transition-colors"
       >
-        {isTight ? "Loosen tape" : "Tighten tape"}
+        {isPlaying ? "Stop" : "Play"}
       </button>
     </main>
   );
