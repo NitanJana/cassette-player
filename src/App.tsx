@@ -161,7 +161,7 @@ export default function App() {
 
   return (
     <main className="min-h-screen flex flex-col gap-8 p-4 bg-background justify-center items-center">
-        <div className="rounded-3xl w-lg h-80 bg-background border-border border flex flex-col">
+        <div className="rounded-3xl w-lg h-80 bg-background border-border border-2 flex flex-col p-2">
           <svg role="img" aria-label="Cassette tape animation" className="size-full" viewBox="40 40 400 240">
             <Reel center={LEFT_REEL}  outerRadius={REEL_RADIUS} isPlaying={isPlaying} />
             <Reel center={RIGHT_REEL} outerRadius={REEL_RADIUS} isPlaying={isPlaying} />
@@ -171,7 +171,7 @@ export default function App() {
           <button
             type="button"
             onClick={toggle}
-            className="mx-auto p-3 mb-4 rounded-full border border-white text-white"
+            className="mx-auto p-3 mb-4 rounded-full border-2 border-white text-white"
           >
             <motion.span
               animate={{ rotate: isPlaying ? 180 : 0 }}
