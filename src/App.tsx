@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { animate } from "motion/react";
+import { useState } from "react";
 import demoImg from "./assets/demo.png";
 
 interface Point {
@@ -32,44 +32,44 @@ function lerp(a: number, b: number, t: number): number {
 
 function lerpConfig(a: TapeConfig, b: TapeConfig, t: number): TapeConfig {
   return {
-    topSag:           lerp(a.topSag,           b.topSag,           t),
-    topBumpOut:       lerp(a.topBumpOut,       b.topBumpOut,       t),
-    topBumpUp:        lerp(a.topBumpUp,        b.topBumpUp,        t),
-    bottomSag:        lerp(a.bottomSag,        b.bottomSag,        t),
-    bottomSpread:     lerp(a.bottomSpread,     b.bottomSpread,     t),
-    leftBottomAngle:  lerp(a.leftBottomAngle,  b.leftBottomAngle,  t),
+    topSag: lerp(a.topSag, b.topSag, t),
+    topBumpOut: lerp(a.topBumpOut, b.topBumpOut, t),
+    topBumpUp: lerp(a.topBumpUp, b.topBumpUp, t),
+    bottomSag: lerp(a.bottomSag, b.bottomSag, t),
+    bottomSpread: lerp(a.bottomSpread, b.bottomSpread, t),
+    leftBottomAngle: lerp(a.leftBottomAngle, b.leftBottomAngle, t),
     rightBottomAngle: lerp(a.rightBottomAngle, b.rightBottomAngle, t),
-    leftTopAngle:     lerp(a.leftTopAngle,     b.leftTopAngle,     t),
-    rightTopAngle:    lerp(a.rightTopAngle,    b.rightTopAngle,    t),
+    leftTopAngle: lerp(a.leftTopAngle, b.leftTopAngle, t),
+    rightTopAngle: lerp(a.rightTopAngle, b.rightTopAngle, t),
   };
 }
 
 const LOOSE: TapeConfig = {
-  topSag:           15,
-  topBumpOut:       28,
-  topBumpUp:        12,
-  bottomSag:        25,
-  bottomSpread:     60,
-  leftBottomAngle:  Math.PI / 2 + 0.35,
+  topSag: 15,
+  topBumpOut: 28,
+  topBumpUp: 12,
+  bottomSag: 25,
+  bottomSpread: 60,
+  leftBottomAngle: Math.PI / 2 + 0.35,
   rightBottomAngle: Math.PI / 2 - 0.35,
-  leftTopAngle:    -Math.PI / 2 - 0.25,
-  rightTopAngle:   -Math.PI / 2 + 0.25,
+  leftTopAngle: -Math.PI / 2 - 0.25,
+  rightTopAngle: -Math.PI / 2 + 0.25,
 };
 
 const TIGHT: TapeConfig = {
-  topSag:           0,
-  topBumpOut:       4,
-  topBumpUp:        2,
-  bottomSag:        15,
-  bottomSpread:     30,
-  leftBottomAngle:  Math.PI / 2 + 0.2,
+  topSag: 0,
+  topBumpOut: 4,
+  topBumpUp: 2,
+  bottomSag: 15,
+  bottomSpread: 30,
+  leftBottomAngle: Math.PI / 2 + 0.2,
   rightBottomAngle: Math.PI / 2 - 0.2,
-  leftTopAngle:    -Math.PI / 2 - 0.15,
-  rightTopAngle:   -Math.PI / 2 + 0.15,
+  leftTopAngle: -Math.PI / 2 - 0.15,
+  rightTopAngle: -Math.PI / 2 + 0.15,
 };
 
-const LEFT_REEL:  Point = { x: 152, y: 155 };
-const RIGHT_REEL: Point = { x: 328, y: 155 };
+const LEFT_REEL: Point = { x: 150, y: 160 };
+const RIGHT_REEL: Point = { x: 330, y: 160 };
 const REEL_RADIUS = 56;
 
 export default function App() {
@@ -89,10 +89,10 @@ export default function App() {
 
   const cfg = lerpConfig(LOOSE, TIGHT, t);
 
-  const bottomLeft  = getPointOnCircle(LEFT_REEL,  REEL_RADIUS, cfg.leftBottomAngle);
+  const bottomLeft = getPointOnCircle(LEFT_REEL, REEL_RADIUS, cfg.leftBottomAngle);
   const bottomRight = getPointOnCircle(RIGHT_REEL, REEL_RADIUS, cfg.rightBottomAngle);
-  const topLeft     = getPointOnCircle(LEFT_REEL,  REEL_RADIUS, cfg.leftTopAngle);
-  const topRight    = getPointOnCircle(RIGHT_REEL, REEL_RADIUS, cfg.rightTopAngle);
+  const topLeft = getPointOnCircle(LEFT_REEL, REEL_RADIUS, cfg.leftTopAngle);
+  const topRight = getPointOnCircle(RIGHT_REEL, REEL_RADIUS, cfg.rightTopAngle);
 
   const midX = (bottomLeft.x + bottomRight.x) / 2;
 
@@ -102,9 +102,9 @@ export default function App() {
       ${bottomRight.x} ${bottomRight.y}`;
 
   const topTape = `M ${topLeft.x} ${topLeft.y}
-    C ${topLeft.x  + cfg.topBumpOut} ${topLeft.y  - cfg.topBumpUp},
-      ${midX - 40} ${topLeft.y  + cfg.topSag},
-      ${midX}      ${topLeft.y  + cfg.topSag}
+    C ${topLeft.x + cfg.topBumpOut} ${topLeft.y - cfg.topBumpUp},
+      ${midX - 40} ${topLeft.y + cfg.topSag},
+      ${midX} ${topLeft.y + cfg.topSag}
     C ${midX + 40} ${topRight.y + cfg.topSag},
       ${topRight.x - cfg.topBumpOut} ${topRight.y - cfg.topBumpUp},
       ${topRight.x} ${topRight.y}`;
@@ -114,7 +114,7 @@ export default function App() {
       <section className="flex gap-8">
         <img src={demoImg} alt="demo" className="w-md aspect-auto" />
         <div className="rounded-3xl w-lg h-80 bg-background border-border border relative">
-          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 480 320">
+          <svg role="img" aria-label="Cassette tape animation" className="absolute inset-0 w-full h-full" viewBox="0 0 480 320">
             <circle cx={LEFT_REEL.x}  cy={LEFT_REEL.y}  r={REEL_RADIUS} fill="none" stroke="white" strokeWidth="2" />
             <circle cx={RIGHT_REEL.x} cy={RIGHT_REEL.y} r={REEL_RADIUS} fill="none" stroke="white" strokeWidth="2" />
             <path d={bottomTape} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
@@ -123,6 +123,7 @@ export default function App() {
         </div>
       </section>
       <button
+        type="button"
         onClick={toggle}
         className="self-start px-6 py-2 rounded-full border border-white text-white hover:bg-white hover:text-black transition-colors"
       >
