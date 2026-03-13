@@ -1,6 +1,6 @@
+import { Pause, Play } from "lucide-react";
 import { animate, motion } from "motion/react";
 import { useState } from "react";
-import demoImg from "./assets/demo.png";
 
 interface Point {
   x: number;
@@ -160,25 +160,28 @@ export default function App() {
       ${topRight.x} ${topRight.y}`;
 
   return (
-    <main className="min-h-screen flex flex-col gap-8 p-4 bg-background">
-      <section className="flex gap-8">
-        <img src={demoImg} alt="demo" className="w-md aspect-auto" />
-        <div className="rounded-3xl w-lg h-80 bg-background border-border border relative">
-          <svg role="img" aria-label="Cassette tape animation" className="absolute inset-0 w-full h-full" viewBox="0 0 480 320">
+    <main className="min-h-screen flex flex-col gap-8 p-4 bg-background justify-center items-center">
+        <div className="rounded-3xl w-lg h-80 bg-background border-border border flex flex-col">
+          <svg role="img" aria-label="Cassette tape animation" className="size-full" viewBox="40 40 400 240">
             <Reel center={LEFT_REEL}  outerRadius={REEL_RADIUS} isPlaying={isPlaying} />
             <Reel center={RIGHT_REEL} outerRadius={REEL_RADIUS} isPlaying={isPlaying} />
             <path d={bottomTape} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
             <path d={topTape}    fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
+          <button
+            type="button"
+            onClick={toggle}
+            className="mx-auto p-3 mb-4 rounded-full border border-white text-white"
+          >
+            <motion.span
+              animate={{ rotate: isPlaying ? 180 : 0 }}
+              transition={{ duration: 0.4 }}
+              className="block"
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </motion.span>
+          </button>
         </div>
-      </section>
-      <button
-        type="button"
-        onClick={toggle}
-        className="self-start px-6 py-2 rounded-full border border-white text-white hover:bg-white hover:text-black transition-colors"
-      >
-        {isPlaying ? "Stop" : "Play"}
-      </button>
     </main>
   );
 }
