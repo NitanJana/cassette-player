@@ -1,4 +1,4 @@
-import { Pause, Play } from "lucide-react";
+import { Github, Pause, Play } from "lucide-react";
 import { animate, motion } from "motion/react";
 import { useState } from "react";
 
@@ -182,6 +182,12 @@ export default function App() {
             </motion.span>
           </button>
         </div>
+
+        <button type="button" className="text-sm text-white absolute bottom-8 right-8">
+          <a href="https://github.com/NitanJana/cassette-player" target="_blank" rel="noopener noreferrer">
+            <Github />
+          </a>
+        </button>
     </main>
   );
 }
