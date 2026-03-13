@@ -1,4 +1,4 @@
-import { animate } from "motion/react";
+import { animate, motion } from "motion/react";
 import { useState } from "react";
 import demoImg from "./assets/demo.png";
 
@@ -17,6 +17,12 @@ interface TapeConfig {
   rightBottomAngle: number;
   leftTopAngle: number;
   rightTopAngle: number;
+}
+
+interface ReelProps {
+  center: Point;
+  outerRadius: number;
+  isPlaying: boolean;
 }
 
 function getPointOnCircle(center: Point, radius: number, angle: number): Point {
@@ -42,6 +48,50 @@ function lerpConfig(a: TapeConfig, b: TapeConfig, t: number): TapeConfig {
     leftTopAngle: lerp(a.leftTopAngle, b.leftTopAngle, t),
     rightTopAngle: lerp(a.rightTopAngle, b.rightTopAngle, t),
   };
+}
+
+function Reel({ center, outerRadius, isPlaying }: ReelProps) {
+  const innerRadius = outerRadius * 0.25;
+  const spokeOffset = innerRadius * 0.5;
+  const numSpokes = 3;
+  const numRings = 3;
+
+  const rings = Array.from({ length: numRings }, (_, i) => {
+    const t = ((i + 1) / (numRings + 1)) ** 0.7;
+    const r = innerRadius + (outerRadius - innerRadius) * t;
+    const opacity = 0.3 + (i / (numRings - 1)) * 0.4;
+    return (
+      <circle key={i} cx={center.x} cy={center.y} r={r} fill="none" stroke="oklch(65.987% 0.01474 285.922)" strokeWidth="1" strokeOpacity={opacity} />
+    );
+  });
+
+  const spokes = Array.from({ length: numSpokes }, (_, i) => {
+    const angle = (i / numSpokes) * Math.PI * 2 - Math.PI / 2;
+    const x1 = center.x + Math.cos(angle) * spokeOffset;
+    const y1 = center.y + Math.sin(angle) * spokeOffset;
+    const x2 = center.x + Math.cos(angle) * innerRadius;
+    const y2 = center.y + Math.sin(angle) * innerRadius;
+    return (
+      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="white" strokeWidth="2" strokeLinecap="round" />
+    );
+  });
+
+  return (
+    <motion.g
+      style={{ transformOrigin: `${center.x}px ${center.y}px` }}
+      animate={{ rotate: isPlaying ? 360 : 0 }}
+      transition={
+        isPlaying
+          ? { duration: 2, ease: "linear", repeat: Infinity }
+          : { duration: 1, ease: "easeOut" }
+      }
+    >
+        <circle cx={center.x} cy={center.y} r={outerRadius} fill="none" stroke="white" strokeWidth="2" />
+        {rings}
+        <circle cx={center.x} cy={center.y} r={innerRadius} fill="none" stroke="white" strokeWidth="2" />
+        {spokes}
+    </motion.g>
+  );
 }
 
 const LOOSE: TapeConfig = {
@@ -115,8 +165,8 @@ export default function App() {
         <img src={demoImg} alt="demo" className="w-md aspect-auto" />
         <div className="rounded-3xl w-lg h-80 bg-background border-border border relative">
           <svg role="img" aria-label="Cassette tape animation" className="absolute inset-0 w-full h-full" viewBox="0 0 480 320">
-            <circle cx={LEFT_REEL.x}  cy={LEFT_REEL.y}  r={REEL_RADIUS} fill="none" stroke="white" strokeWidth="2" />
-            <circle cx={RIGHT_REEL.x} cy={RIGHT_REEL.y} r={REEL_RADIUS} fill="none" stroke="white" strokeWidth="2" />
+            <Reel center={LEFT_REEL}  outerRadius={REEL_RADIUS} isPlaying={isPlaying} />
+            <Reel center={RIGHT_REEL} outerRadius={REEL_RADIUS} isPlaying={isPlaying} />
             <path d={bottomTape} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
             <path d={topTape}    fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
